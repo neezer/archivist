@@ -1,6 +1,6 @@
 package main
 
-import "github.com/kofile/librarian/cmd"
+import "github.com/kofile/archivist/cmd"
 
 func main() {
 	cmd.Execute()
