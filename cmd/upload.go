@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	log "github.com/sirupsen/logrus"
@@ -44,26 +45,12 @@ func init() {
 func DoUpload(args []string) (err error) {
 	name := args[0]
 	assetPath := args[1]
-	region := viper.GetString("s3.region")
 
 	uploadLog.Info("checking connection info")
 
-	if region == "" {
-		return errors.New("must provide region--either set the env var S3_ARTIFACTS_REGION or use the --s3-region flag")
-	}
-
+	region := viper.GetString("s3.region")
 	accessKey := viper.GetString("s3.access-key")
-
-	if accessKey == "" {
-		return errors.New("must provide aws access key--either set the env var AWS_ACCESS_KEY_ID or use the --s3-access-key flag")
-	}
-
 	secretKey := viper.GetString("s3.secret-key")
-
-	if secretKey == "" {
-		return errors.New("must provide aws secret access key--either set the env var AWS_SECRET_ACCESS_KEY or use the --s3-secret-access-key flag")
-	}
-
 	bucket := viper.GetString("s3.bucket")
 
 	if bucket == "" {
@@ -71,7 +58,17 @@ func DoUpload(args []string) (err error) {
 	}
 
 	uploadLog.Info("creating AWS session")
-	s, err := session.NewSession(&aws.Config{Region: aws.String(region)})
+	creds := credentials.NewStaticCredentials(accessKey, secretKey, "")
+	awsConfig := aws.Config{Region: aws.String(region)}
+
+	if _, err := creds.Get(); err == nil {
+		awsConfig.WithCredentials(creds)
+	}
+
+	s, err := session.NewSessionWithOptions(session.Options{
+		Config:            awsConfig,
+		SharedConfigState: session.SharedConfigEnable,
+	})
 
 	if err != nil {
 		return err

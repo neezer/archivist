@@ -8,7 +8,7 @@ import (
 // BindS3Flags binds s3 flags to the given command
 func BindS3Flags(cmd *cobra.Command) {
 	cmd.Flags().String("s3-bucket", "artifacts-kofile-systems", "name of bucket")
-	cmd.Flags().String("s3-region", "us-west-2", "region for s3 bucket")
+	cmd.Flags().String("s3-region", "", "region for s3 bucket")
 	cmd.Flags().String("s3-access-key", "", "access key for s3")
 	cmd.Flags().String("s3-secret-access-key", "", "secret access key for s3")
 
