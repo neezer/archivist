@@ -13,9 +13,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+var uploadLog = log.WithFields(log.Fields{"stage": "upload"})
 
 var uploadCmd = &cobra.Command{
 	Use:   "upload [name of project] [path to file to upload]",
@@ -43,46 +46,53 @@ func DoUpload(args []string) (err error) {
 	assetPath := args[1]
 	region := viper.GetString("s3.region")
 
+	uploadLog.Info("checking connection info")
+
 	if region == "" {
-		return errors.New("must provide region")
+		return errors.New("must provide region--either set the env var S3_ARTIFACTS_REGION or use the --s3-region flag")
 	}
 
 	accessKey := viper.GetString("s3.access-key")
 
 	if accessKey == "" {
-		return errors.New("must provide access key")
+		return errors.New("must provide aws access key--either set the env var AWS_ACCESS_KEY_ID or use the --s3-access-key flag")
 	}
 
 	secretKey := viper.GetString("s3.secret-key")
 
 	if secretKey == "" {
-		return errors.New("must provide secret access key")
+		return errors.New("must provide aws secret access key--either set the env var AWS_SECRET_ACCESS_KEY or use the --s3-secret-access-key flag")
 	}
 
 	bucket := viper.GetString("s3.bucket")
 
 	if bucket == "" {
-		return errors.New("must provide a bucket name")
+		return errors.New("must provide a bucket name--either set the env var S3_ARTIFACTS_BUCKET or use the --s3-bucket flag")
 	}
 
-	// remap environment variables to what the aws-sdk expects
-	os.Setenv("AWS_ACCESS_KEY_ID", accessKey)
-	os.Setenv("AWS_SECRET_ACCESS_KEY", secretKey)
-
+	uploadLog.Info("creating AWS session")
 	s, err := session.NewSession(&aws.Config{Region: aws.String(region)})
 
 	if err != nil {
 		return err
 	}
 
-	gitCmd := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD")
-	out, err := gitCmd.CombinedOutput()
+	uploadLog.Info("getting branch name")
+	branch := viper.GetString("git.branch")
 
-	if err != nil {
-		return err
+	if branch == "" {
+		gitCmd := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD")
+		out, err := gitCmd.CombinedOutput()
+
+		if err != nil {
+			return err
+		}
+
+		branch = string(out)
 	}
 
-	branch := strings.Replace(strings.TrimSpace(string(out)), "/", "_", -1)
+	uploadLog.Info("determining destination key")
+	branch = strings.Replace(strings.TrimSpace(branch), "/", "_", -1)
 	assetName := filepath.Base(assetPath)
 	key := strings.Join([]string{name, branch, assetName}, "/")
 	err = addFileToS3(s, bucket, assetPath, key)
@@ -109,6 +119,7 @@ func addFileToS3(s *session.Session, bucket string, fileDir string, key string) 
 
 	file.Read(buffer)
 
+	uploadLog.Info("uploading file to S3")
 	_, err = s3.New(s).PutObject(&s3.PutObjectInput{
 		Bucket:               aws.String(bucket),
 		Key:                  aws.String(key),

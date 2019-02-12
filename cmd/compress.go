@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -10,7 +11,9 @@ import (
 
 	"github.com/mholt/archiver"
 	"github.com/otiai10/copy"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var compressCmd = &cobra.Command{
@@ -21,7 +24,7 @@ named using the latest git SHA.
 
 Please note the following:
 
-  - requires git
+  - requires git (if GIT_COMMIT is not already set)
   - CWD must be in the project root folder
   - program must have permissions to write to the CWD`,
 	Args: cobra.ExactArgs(2),
@@ -41,8 +44,11 @@ func init() {
 
 // DoCompress compresses a target directory
 func DoCompress(args []string) (archiveFile string, err error) {
+	compressLog := log.WithFields(log.Fields{"stage": "compress"})
 	target := args[0]
 	dest := args[1]
+
+	compressLog.Info("gathering info")
 
 	target, err = filepath.Abs(target)
 
@@ -56,6 +62,8 @@ func DoCompress(args []string) (archiveFile string, err error) {
 		return "", err
 	}
 
+	compressLog.Info("checking target")
+
 	targetInfo, err := os.Stat(target)
 
 	if os.IsNotExist(err) {
@@ -66,40 +74,68 @@ func DoCompress(args []string) (archiveFile string, err error) {
 		return "", errors.New("target is not a directory")
 	}
 
+	compressLog.Info("making dest dir")
 	err = os.MkdirAll(dest, os.ModePerm)
 
 	if err != nil {
 		return "", err
 	}
 
-	gitCmd := exec.Command("git", "rev-parse", "HEAD")
-	out, err := gitCmd.CombinedOutput()
+	compressLog.Info("getting git SHA")
+	sha := viper.GetString("git.sha")
 
-	if err != nil {
-		return "", err
+	if sha == "" {
+		gitCmd := exec.Command("git", "rev-parse", "HEAD")
+		out, err := gitCmd.CombinedOutput()
+
+		if err != nil {
+			return "", err
+		}
+
+		sha = strings.TrimSpace(string(out))
 	}
 
-	sha := strings.TrimSpace(string(out))
-	err = os.MkdirAll(sha, os.ModePerm)
+	shaDir := filepath.Join(dest, sha)
+
+	compressLog.Info("making SHA directory")
+	err = os.MkdirAll(shaDir, os.ModePerm)
 
 	if err != nil {
 		return "", err
 	}
 
 	removeTargetCopy := func() {
+		compressLog.Info("cleaning up copied files")
+
 		os.RemoveAll(sha)
 	}
 
 	defer removeTargetCopy()
 
-	err = copy.Copy(target, sha)
+	compressLog.Info("copying files from target to SHA directory")
+	err = copy.Copy(target, shaDir)
 
 	if err != nil {
 		return "", err
 	}
 
+	files, err := ioutil.ReadDir(shaDir)
+
+	if err != nil {
+		return "", err
+	}
+
+	for _, file := range files {
+		compressLog.Debug(file.Name())
+	}
+
 	archiveFile = filepath.Join(dest, sha+".tar.gz")
-	err = archiver.Archive([]string{sha}, archiveFile)
+
+	compressLog.Info("removing existing archive, if present")
+	os.RemoveAll(archiveFile)
+
+	compressLog.Info("creating archive")
+	err = archiver.Archive([]string{shaDir}, archiveFile)
 
 	if err != nil {
 		os.RemoveAll(archiveFile)

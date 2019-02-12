@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +15,11 @@ var archiveCmd = &cobra.Command{
 
 This command is the same as running ` + "`compress` and `upload`.",
 	Run: func(cmd *cobra.Command, args []string) {
-		os.Exit(doArchive(args))
+		err := doArchive(args)
+
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 
@@ -28,22 +30,24 @@ func init() {
 	BindS3Flags(archiveCmd)
 }
 
-func doArchive(args []string) int {
+func doArchive(args []string) error {
 	name := args[0]
 	target := args[1]
+
+	log.Info("compressing target dir")
 	archiveFile, err := DoCompress([]string{target, dest})
 
 	if err != nil {
-		fmt.Println(err)
-		return 1
+		return err
 	}
 
+	log.Info("processing upload")
 	err = DoUpload([]string{name, archiveFile})
 
 	if err != nil {
-		fmt.Println(err)
-		return 1
+		return err
 	}
 
-	return 0
+	log.Info("complete")
+	return nil
 }
