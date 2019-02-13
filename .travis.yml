@@ -6,7 +6,7 @@ before_install:
   - make dep
 install:
   - make build
-before_deploy:
+after_success:
   - make cross-build
   - make debian
 notifications:
