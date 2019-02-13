@@ -6,6 +6,8 @@
 
 # Archivist
 
+[![Build Status](https://travis-ci.com/kofile/archivist.svg?branch=master)](https://travis-ci.com/kofile/archivist)
+
 Worry about building your app: let Archivist handle compressing/uploading it.
 
 - Standalone binary
