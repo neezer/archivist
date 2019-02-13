@@ -20,7 +20,7 @@ build: ## Build the app
 	dep ensure && go build
 
 cross-build: ## Build the app for multiple os/arch
-	gox -osarch=$(OSARCH) -output="bin/archivist_{{.OS}}_{{.Arch}}" -ldflags="-s -w -X github.com/kofile/archivist/cmd.version=$(VERSION) -X github.com/kofile/archivist/cmd.buildDate=$(BUILD_DATE)"
+	gox -osarch=$(OSARCH) -output="bin/archivist_{{.OS}}_{{.Arch}}" -ldflags="-s -w -X github.com/kofile/archivist/cmd.version=$(VERSION) -X 'github.com/kofile/archivist/cmd.buildDate=$(BUILD_DATE)'"
 	upx bin/archivist_linux_amd64
 
 debian: ## Build .deb package
