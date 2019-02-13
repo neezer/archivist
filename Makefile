@@ -2,7 +2,7 @@ SHELL := $(shell which bash)
 VERSION := $(shell git tag | tail -n 1 | tail -c +2)
 OSARCH := "linux/amd64 darwin/amd64"
 ENV = /usr/bin/env
-.SHELLFLAGS = -c
+.SHELLFLAGS = -ce
 .DEFAULT_GOAL := help # Running Make will run the help target
 
 .SILENT: ;               # no need for @
