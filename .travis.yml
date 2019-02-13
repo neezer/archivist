@@ -8,9 +8,6 @@ install:
   - make build
 before_deploy:
   - make cross-build
-branches:
-  except:
-    - "/^v\\d+\\.\\d+\\.\\d+$/"
 notifications:
   email: false
 deploy:
