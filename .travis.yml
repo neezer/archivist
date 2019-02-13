@@ -8,6 +8,8 @@ install:
   - make build
 before_deploy:
   - make cross-build
+  - make debian
+  - ls -alh deb
 notifications:
   email: false
 deploy:

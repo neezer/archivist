@@ -1,1 +1,3 @@
-bin
+/bin
+deb/archivist/DEBIAN/control
+deb/archivist/usr/local/bin/archivist

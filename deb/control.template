@@ -1,0 +1,9 @@
+Package: archivist
+Version: {{VERSION}}
+Section: custom
+Priority: optional
+Architecture: all
+Essential: no
+Installed-Size: {{SIZE}}
+Maintainer: https://github.com/neezer
+Description: Easily compress and upload application artifacts
