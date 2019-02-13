@@ -1,0 +1,15 @@
+language: go
+go:
+  - "1.11"
+before_install:
+  - sudo apt-get install -y upx-ucl
+  - make dep
+install:
+  - make build
+after_success:
+  - make cross-build
+branches:
+  except:
+    - /^v\d+\.\d+\.\d+$/
+notifications:
+  email: false
