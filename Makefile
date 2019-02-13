@@ -19,7 +19,8 @@ build: ## Build the app
 
 cross-build: ## Build the app for multiple os/arch
 	gox -osarch=$(OSARCH) -output="bin/archivist_{{.OS}}_{{.Arch}}" -ldflags="-s -w"
-	for binary in ./bin/*; do upx "$${binary}"; done
+	upx bin/archivist_linux_amd64
+	# for binary in ./bin/*; do upx "$${binary}"; done
 
 help: ## Show Help
 	grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
