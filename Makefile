@@ -24,9 +24,9 @@ cross-build: ## Build the app for multiple os/arch
 
 debian: ## Build .deb package
 	cp bin/archivist_linux_amd64 deb/archivist/usr/local/bin/archivist
-	ls -al deb/archivist/usr/local/bin
 	chmod +x deb/archivist/usr/local/bin/archivist
 	SIZE=`du -k deb/archivist/usr/local/bin/archivist | cut -f1` perl -pe 's/\{\{(.*?)\}\}/$$ENV{$$1}/' deb/control.template > deb/archivist/DEBIAN/control
+	cat deb/archivist/DEBIAN/control
 	(cd deb && dpkg-deb --build archivist && mv archivist.deb ../bin/archivist-$(VERSION)_i386.deb)
 
 help: ## Show Help
