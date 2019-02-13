@@ -26,7 +26,7 @@ debian: ## Build .deb package
 	cp bin/archivist_linux_amd64 deb/archivist/usr/local/bin/archivist
 	chmod +x deb/archivist/usr/local/bin/archivist
 	SIZE=$(shell du -k "./deb/archivist/usr/local/bin/archivist" | cut -f1) perl -pe 's/\{\{(.*?)\}\}/$$ENV{$$1}/' deb/control.template > deb/archivist/DEBIAN/control
-	(cd deb && dpkg-deb --build archivist && mv archivist-$(VERSION)_i386.deb)
+	(cd deb && dpkg-deb --build archivist && mv archivist.deb ../bin/archivist-$(VERSION)_i386.deb)
 
 help: ## Show Help
 	grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
