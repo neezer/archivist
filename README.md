@@ -131,7 +131,8 @@ Additionally, you can use the following flags:
 `make help`
 
 **NOTE**: Binaries produced with `make cross-build` are compiled with
-`-ldflags="-s -w"` and packed with [UPX](https://upx.github.io/).
+`-ldflags="-s -w"`. The `linux/amd64` binary is packed with
+[UPX](https://upx.github.io/).
 
 ## Author
 
