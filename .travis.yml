@@ -10,6 +10,15 @@ after_success:
   - make cross-build
 branches:
   except:
-    - /^v\d+\.\d+\.\d+$/
+    - "/^v\\d+\\.\\d+\\.\\d+$/"
 notifications:
   email: false
+deploy:
+  provider: releases
+  file_glob: true
+  skip_cleanup: true
+  api_key:
+    secure: Om2bie5gR7/TgcXDn1pycAwzgpBSsR/bhLEH6VTF0h8h97F8viWj2b/DK5cd6N56JxSu3gxCfUWK034EcTzHeU0Z8aro2Gnjmw8rTZ7d5RDOvb3Z74/7w8y07wD+tK8ILEAHZ2rXdrADKuz5XpLJ2U72TeHiRO448K781iDlZpwhaRqnolHjfgtWqvQqbwlXhWylea051wdXwprvHgYPgbPc/sxI5Pc96Kjeeb2r+Euf+0ctWvLimP9q2DgChYxyb0QAtqzdRQAOLhFaaLy0zlb8LRrIRNxUpxXVAXf2Pdrip/mxTZ7zG6i/0j5vzGaHUPtRz+lzJV59s+fon0QpCJonIyp+/5eNuKLV9xoGWsXOzUaPXrHU/9Uxb2dN1AG3ouOxjGDYvVqbiGmonCc4qYGFxRBRp/n8qdU63JtN08ZKNF6L5ExEEVbecRGJ/IuxvA6o8h7gALksEk1Rdi2dJJsC3IxUmguYwzIKxAyS455F8lLFQRjOFWU12u4triwWWt8G0xcHhWqSvToDg+AlgPFjwHorwH1jkQ0giRyQXkBaSjeRCr5HPLAyy9M5CMLt9j4VcqfoqYeK8VGqoLIPJrxUQx7PQ8ofLVvQOKK3jtiWf4MmUjkvo5hP9do/Vf+eEHupQinr3zyWEkifa++XXe6Jt6w+OqjCUT6dx5Jg4zc=
+  file: bin/*
+  on:
+    tags: true
